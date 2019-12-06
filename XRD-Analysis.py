@@ -7,7 +7,7 @@ import numpy as np
 from scipy import optimize
 
 # parser init begin
-VERSION = "0.0.1"
+VERSION = "0.1.0"
 parser = argparse.ArgumentParser()
 parser.add_argument("-w", "--window", action='append', help='Specify waveform window range. ex) \'-w 50-80\'')
 parser.add_argument('filename', metavar='file', type=str, help='read xrd csv file.')
