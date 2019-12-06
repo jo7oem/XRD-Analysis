@@ -1,3 +1,4 @@
 /res.ods
 *.csv
 /venv/
+./.idea
