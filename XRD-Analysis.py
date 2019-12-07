@@ -44,10 +44,12 @@ class DataSet:
                 self.y[i] = val
             else:
                 res.append(val)
-        new = DataSet()
-        new.x = self.x
-        new.y = res
-        return new
+        if not perm:
+            new = DataSet()
+            new.x = self.x
+            new.y = res
+            return new
+        return
 
     def search_x(self, x):
         for i in range(len(self.x)):
@@ -259,13 +261,15 @@ def main():
 
     fit, _ = peak_fit(noBG, fittinglist)
     print("Fitting result by ", target_file)
-    print("Gaussian,Amp,mu(peak),sigma,(BG),FWHM")
-    print("BG", BG_fit[0], BG_fit[1], BG_fit[2], BG_fit[3] + BG_adj, sep=',')
+    print("Gaussian,Amp,mu(peak),sigma,BG,BG Adj")
+    print("BG", BG_fit[0], BG_fit[1], BG_fit[2], BG_fit[3], BG_adj, sep=',')
+    print("")
+    print("Gaussian,Amp,mu(peak),sigma,FWHM")
     for i in range(len(fittinglist)):
-        print(("fit" + str(i) + "(" + str(fittinglist[i]) + ")"), fit[i * 3], fit[i * 3 + 1], fit[i * 3 + 2], 0,
+        print(("fit" + str(i) + "(" + str(fittinglist[i]) + ")"), fit[i * 3], fit[i * 3 + 1], fit[i * 3 + 2],
               FWHM(fit[i * 3 + 2]), sep=',')
 
-    print("\n\n")
+    print("\n")
     print("BG=,", fit[-1])
 
 
