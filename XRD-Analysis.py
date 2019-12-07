@@ -11,6 +11,7 @@ VERSION = "0.1.0"
 parser = argparse.ArgumentParser()
 parser.add_argument("-w", "--window", action='append', help='Specify waveform window range. ex) \'-w 50-80\'')
 parser.add_argument("-s", "--smoothing", default=7, type=int, help='Number of data points for smoothing.')
+parser.add_argument("--maxfev", default=600, type=int, help='scipy curv_fit maxfev option')
 parser.add_argument('filename', metavar='file', type=str, help='read xrd csv file.')
 parser.add_argument('peaks', metavar='Peak', type=float, nargs='+', help='an xrd peak position x')
 args = parser.parse_args()
@@ -198,14 +199,14 @@ def peak_fit(xy: DataSet, peaks):
         bounds_top.append(180)
 
         p0.append(sigma)
-        bounds_bottom.append(0.0001)
+        bounds_bottom.append(0.000001)
         bounds_top.append(np.inf)
 
-    p0.append(0.0)
+    """p0.append(0.0)
     bounds_bottom.append(-np.inf)
-    bounds_top.append(np.inf)
+    bounds_top.append(np.inf)"""
     bounds = (tuple(bounds_bottom), tuple(bounds_top))
-    return optimize.curve_fit(sum_gaussians, xy.x, xy.y, p0=p0, bounds=bounds)
+    return optimize.curve_fit(sum_gaussians, xy.x, xy.y, p0=p0, bounds=bounds, maxfev=args.maxfev)
 
 
 def sum_gaussians(x, *params):
@@ -248,7 +249,7 @@ def main():
 
     xs = np.array(BG_sumple.x)
     ys = np.array(BG_sumple.y)
-    BG_fit, _ = optimize.curve_fit(gaussian, xs, ys, p0=[ys[0], xs[0], 1, ys[-1]], maxfev=1000,
+    BG_fit, _ = optimize.curve_fit(gaussian, xs, ys, p0=[ys[0], xs[0], 1, ys[-1]], maxfev=args.maxfev,
                                    bounds=((0, -20, 0.1, 0), (np.inf, 20, np.inf, np.inf)))
 
     noBG = xrd_orgine.deduce_func_x(False, gaussian, BG_fit)
