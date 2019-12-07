@@ -184,13 +184,26 @@ def peak_fit(xy: DataSet, peaks):
         raise ValueError
     p0 = []
     sigma = 0.2
+    bounds_bottom = []
+    bounds_top = []
     for peak in peaks:
         p0.append(xy.search_x(peak))
-        p0.append(peak)
-        p0.append(sigma)
-    p0.append(0.0)
+        bounds_bottom.append(0)
+        bounds_top.append(np.inf)
 
-    return optimize.curve_fit(sum_gaussians, xy.x, xy.y, p0, )
+        p0.append(peak)
+        bounds_bottom.append(0)
+        bounds_top.append(180)
+
+        p0.append(sigma)
+        bounds_bottom.append(0.0001)
+        bounds_top.append(np.inf)
+
+    p0.append(0.0)
+    bounds_bottom.append(-np.inf)
+    bounds_top.append(np.inf)
+    bounds = (tuple(bounds_bottom), tuple(bounds_top))
+    return optimize.curve_fit(sum_gaussians, xy.x, xy.y, p0=p0, bounds=bounds)
 
 
 def sum_gaussians(x, *params):
@@ -235,15 +248,24 @@ def main():
     ys = np.array(BG_sumple.y)
     BG_fit, _ = optimize.curve_fit(gaussian, xs, ys, p0=[ys[0], xs[0], 1, ys[-1]], maxfev=1000,
                                    bounds=((0, -20, 0.1, 0), (np.inf, 20, np.inf, np.inf)))
+
     noBG = xrd_orgine.deduce_func_x(False, gaussian, BG_fit)
+    BG_adj = min(noBG.y)
+
+    def adder(x, min_y):
+        return 0 * x + min_y
+
+    noBG.deduce_func_x(True, adder, (BG_adj,))
 
     fit, _ = peak_fit(noBG, fittinglist)
     print("Fitting result by ", target_file)
     print("Gaussian,Amp,mu(peak),sigma,(BG),FWHM")
-    print("BG", BG_fit[0], BG_fit[1], BG_fit[2], BG_fit[3], sep=',')
+    print("BG", BG_fit[0], BG_fit[1], BG_fit[2], BG_fit[3] + BG_adj, sep=',')
     for i in range(len(fittinglist)):
         print(("fit" + str(i) + "(" + str(fittinglist[i]) + ")"), fit[i * 3], fit[i * 3 + 1], fit[i * 3 + 2], 0,
               FWHM(fit[i * 3 + 2]), sep=',')
+
+    print("\n\n")
     print("BG=,", fit[-1])
 
 
