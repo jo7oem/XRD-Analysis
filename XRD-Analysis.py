@@ -10,6 +10,7 @@ from scipy import optimize
 VERSION = "0.1.0"
 parser = argparse.ArgumentParser()
 parser.add_argument("-w", "--window", action='append', help='Specify waveform window range. ex) \'-w 50-80\'')
+parser.add_argument("-s", "--smoothing", default=7, type=int, help='Number of data points for smoothing.')
 parser.add_argument('filename', metavar='file', type=str, help='read xrd csv file.')
 parser.add_argument('peaks', metavar='Peak', type=float, nargs='+', help='an xrd peak position x')
 args = parser.parse_args()
@@ -54,7 +55,36 @@ class DataSet:
                 return self.y[i]
         return None
 
-    def smoothing(self):
+    def smoothing(self, point):
+        if point <= 1:
+            return
+        elif point <= 5:
+            return
+        elif point <= 7:
+            self.smoothing_7()
+            return
+        else:
+            return
+
+    def smoothing_5(self):
+        if self.smooth:
+            return
+        ly = len(self.y)
+        sw = [self.y[0]] * 5
+        sw[4] = self.y[1]
+
+        for i in range(ly):
+            for j in range(4):
+                sw[j] = sw[j + 1]
+            if i >= ly - 2:
+                sw[4] = self.y[ly - 1]
+            else:
+                sw[6] = self.y[i + 2]
+            self.y[i] = (-3 * sw[0] + 12 * sw[1] + 17 * sw[2] + 12 * sw[3] + -3 * sw[4]) / 35
+        self.smooth = True
+        return
+
+    def smoothing_7(self):
         if self.smooth:
             return
         ly = len(self.y)
@@ -70,6 +100,27 @@ class DataSet:
             else:
                 sw[6] = self.y[i + 3]
             self.y[i] = (-2 * sw[0] + 3 * sw[1] + 6 * sw[2] + 7 * sw[3] + 6 * sw[4] + 3 + sw[5] - 2 * sw[6]) / 21
+        self.smooth = True
+        return
+
+    def smoothing_9(self):
+        if self.smooth:
+            return
+        ly = len(self.y)
+        sw = [self.y[0]] * 9
+        sw[6] = self.y[1]
+        sw[7] = self.y[2]
+        sw[8] = self.y[3]
+
+        for i in range(ly):
+            for j in range(8):
+                sw[j] = sw[j + 1]
+            if i >= ly - 4:
+                sw[8] = self.y[ly - 1]
+            else:
+                sw[8] = self.y[i + 4]
+            self.y[i] = (-21 * sw[0] + 14 * sw[1] + 39 * sw[2] + 54 * sw[3] + 59 * sw[4] + 54 + sw[5] + 39 * sw[
+                6] + 14 * sw[7] - 21 * sw[8]) / 231
         self.smooth = True
         return
 
@@ -172,7 +223,7 @@ def main():
     fittinglist = args.peaks
 
     xrd_orgine = read_csv(target_file)
-    xrd_orgine.smoothing()
+    xrd_orgine.smoothing(args.smoothing)
     BG_sumple, xrd_windows = separate_window(xrd_orgine, window_list)
 
     xs = np.array(BG_sumple.x)
@@ -183,7 +234,7 @@ def main():
 
     fit, _ = peak_fit(noBG, fittinglist)
     print("Fitting result by ", target_file)
-    print("Gauussian,Amp,mu(peak),sigma,(BG),半値幅")
+    print("Gaussian,Amp,mu(peak),sigma,(BG),FWHM")
     print("BG", BG_fit[0], BG_fit[1], BG_fit[2], BG_fit[3], sep=',')
     for i in range(len(fittinglist)):
         print(("fit" + str(i) + "(" + str(fittinglist[i]) + ")"), fit[i * 3], fit[i * 3 + 1], fit[i * 3 + 2], 0,
