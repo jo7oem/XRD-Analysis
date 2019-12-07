@@ -222,7 +222,12 @@ def main():
 
     fittinglist = args.peaks
 
-    xrd_orgine = read_csv(target_file)
+    try:
+        xrd_orgine = read_csv(target_file)
+    except FileNotFoundError:
+        print(target_file + " is not found.")
+        return
+
     xrd_orgine.smoothing(args.smoothing)
     BG_sumple, xrd_windows = separate_window(xrd_orgine, window_list)
 
