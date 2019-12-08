@@ -185,7 +185,7 @@ def multi_dim_func(x: float, *args) -> float:
 
 def peak_fit(xy: DataSet, peaks):
     if len(peaks) < 1:
-        raise ValueError
+        return [], []
     p0 = []
     sigma = 0.2
     bounds_bottom = []
