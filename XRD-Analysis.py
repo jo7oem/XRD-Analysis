@@ -13,7 +13,8 @@ parser.add_argument("-w", "--window", action='append', help='Specify waveform wi
 parser.add_argument("-s", "--smoothing", default=7, type=int, help='Number of data points for smoothing.')
 parser.add_argument("--maxfev", default=600, type=int, help='scipy curv_fit maxfev option')
 parser.add_argument('filename', metavar='file', type=str, help='read xrd csv file.')
-parser.add_argument('peaks', metavar='Peak', type=float, nargs='+', help='an xrd peak position x')
+parser.add_argument('peaks', metavar='Peak', type=str, nargs='+',
+                    help='Use peak window and an xrd peak position x. ex) 0,66')
 args = parser.parse_args()
 
 
@@ -202,9 +203,9 @@ def peak_fit(xy: DataSet, peaks):
         bounds_bottom.append(0.000001)
         bounds_top.append(np.inf)
 
-    """p0.append(0.0)
+    p0.append(0.0)
     bounds_bottom.append(-np.inf)
-    bounds_top.append(np.inf)"""
+    bounds_top.append(np.inf)
     bounds = (tuple(bounds_bottom), tuple(bounds_top))
     return optimize.curve_fit(sum_gaussians, xy.x, xy.y, p0=p0, bounds=bounds, maxfev=args.maxfev)
 
@@ -236,7 +237,21 @@ def main():
             up = float(x1)
         window_list.append((bt, up))
 
-    fittinglist = args.peaks
+    fittinglist = [[]]
+    for i in range(len(window_list)):
+        fittinglist.append([])
+    for fitting_hint in args.peaks:
+        separated = fitting_hint.split(sep=',')
+        if len(separated) != 2:
+            print("[ERROR]: " + fitting_hint + " is bad request.")
+            return
+        window_num = int(separated[0])
+        peak_hint = float(separated[1])
+        if not 0 <= window_num <= len(window_list):
+            print("[ERROR]: " + str(window_num) + " in " + fitting_hint + " is bad request.")
+            return
+
+        fittinglist[window_num].append(peak_hint)
 
     try:
         xrd_orgine = read_csv(target_file)
@@ -245,7 +260,7 @@ def main():
         return
 
     xrd_orgine.smoothing(args.smoothing)
-    BG_sumple, xrd_windows = separate_window(xrd_orgine, window_list)
+    BG_sumple, _ = separate_window(xrd_orgine, window_list)
 
     xs = np.array(BG_sumple.x)
     ys = np.array(BG_sumple.y)
@@ -260,15 +275,24 @@ def main():
 
     noBG.deduce_func_x(True, adder, (BG_adj,))
 
-    fit, _ = peak_fit(noBG, fittinglist)
+    _, in_window_waves = separate_window(noBG, window_list)
+
+    fitting_result = []
+    for i in range(len(in_window_waves)):
+        result, _ = peak_fit(in_window_waves[i], fittinglist[i])
+        fitting_result.append((*result,))
+
+    fit, _ = peak_fit(noBG, fittinglist[0])
     print("Fitting result by ", target_file)
     print("Gaussian,Amp,mu(peak),sigma,BG,BG Adj")
     print("BG", BG_fit[0], BG_fit[1], BG_fit[2], BG_fit[3], BG_adj, sep=',')
     print("")
+
     print("Gaussian,Amp,mu(peak),sigma,FWHM")
-    for i in range(len(fittinglist)):
-        print(("fit" + str(i) + "(" + str(fittinglist[i]) + ")"), fit[i * 3], fit[i * 3 + 1], fit[i * 3 + 2],
-              FWHM(fit[i * 3 + 2]), sep=',')
+    for results in fitting_result:
+        for i in range(int(len(results) / 3)):
+            print(("fit" + str(i) + "(" + str(fittinglist[i]) + ")"), fit[i * 3], fit[i * 3 + 1], fit[i * 3 + 2],
+                  FWHM(fit[i * 3 + 2]), sep=',')
 
     print("\n")
     print("BG=,", fit[-1])
