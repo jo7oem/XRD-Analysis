@@ -183,7 +183,7 @@ def multi_dim_func(x: float, *args) -> float:
     return res
 
 
-def peak_fit(xy: DataSet, peaks):
+def peak_fit(xy: DataSet, peaks, window):
     if len(peaks) < 1:
         return [], []
     p0 = []
@@ -196,11 +196,11 @@ def peak_fit(xy: DataSet, peaks):
         bounds_top.append(np.inf)
 
         p0.append(peak)
-        bounds_bottom.append(0)
-        bounds_top.append(180)
+        bounds_bottom.append(window[0])
+        bounds_top.append(window[1])
 
         p0.append(sigma)
-        bounds_bottom.append(0.000001)
+        bounds_bottom.append(0)
         bounds_top.append(np.inf)
 
     p0.append(0.0)
@@ -279,7 +279,7 @@ def main():
 
     fitting_result = []
     for i in range(len(in_window_waves)):
-        result, _ = peak_fit(in_window_waves[i], fittinglist[i])
+        result, _ = peak_fit(in_window_waves[i], fittinglist[i], window_list[i])
         fitting_result.append((*result,))
 
     print("Fitting result by ", target_file)
