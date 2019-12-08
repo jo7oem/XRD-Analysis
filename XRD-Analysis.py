@@ -282,20 +282,22 @@ def main():
         result, _ = peak_fit(in_window_waves[i], fittinglist[i])
         fitting_result.append((*result,))
 
-    fit, _ = peak_fit(noBG, fittinglist[0])
     print("Fitting result by ", target_file)
     print("Gaussian,Amp,mu(peak),sigma,BG,BG Adj")
     print("BG", BG_fit[0], BG_fit[1], BG_fit[2], BG_fit[3], BG_adj, sep=',')
     print("")
 
-    print("Gaussian,Amp,mu(peak),sigma,FWHM")
-    for results in fitting_result:
-        for i in range(int(len(results) / 3)):
-            print(("fit" + str(i) + "(" + str(fittinglist[i]) + ")"), fit[i * 3], fit[i * 3 + 1], fit[i * 3 + 2],
-                  FWHM(fit[i * 3 + 2]), sep=',')
+    print("Gaussian,Amp,mu(peak),sigma,BG,FWHM")
+    for w in range(len(fitting_result)):
+        lres = int(len(fitting_result[w]) / 3)
+        if lres == 0:
+            continue
+        for i in range(lres):
+            print(("fit" + str(w) + "-" + str(i) + "(" + str(fittinglist[w][i]) + ")"), fitting_result[w][i * 3],
+                  fitting_result[w][i * 3 + 1], fitting_result[w][i * 3 + 2], fitting_result[w][-1] / lres,
+                  FWHM(fitting_result[w][i * 3 + 2]), sep=',')
 
     print("\n")
-    print("BG=,", fit[-1])
 
 
 if __name__ == '__main__':
