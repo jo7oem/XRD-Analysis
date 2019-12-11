@@ -227,7 +227,6 @@ def main():
     target_file = args.filename
     window_list = []
     for window_str in args.window:
-        w = ""
         x1, x2 = window_str.split(sep='-')
         if float(x1) < float(x2):
             bt = float(x1)
