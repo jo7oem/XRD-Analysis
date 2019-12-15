@@ -204,7 +204,7 @@ def peak_fit(xy: DataSet, peaks, window):
         bounds_top.append(np.inf)
 
     p0.append(0.0)
-    bounds_bottom.append(-np.inf)
+    bounds_bottom.append(0)
     bounds_top.append(np.inf)
     bounds = (tuple(bounds_bottom), tuple(bounds_top))
     return optimize.curve_fit(sum_gaussians, xy.x, xy.y, p0=p0, bounds=bounds, maxfev=args.maxfev)
@@ -264,7 +264,8 @@ def main():
     xs = np.array(BG_sumple.x)
     ys = np.array(BG_sumple.y)
     BG_fit, _ = optimize.curve_fit(gaussian, xs, ys, p0=[ys[0], xs[0], 1, ys[-1]], maxfev=args.maxfev,
-                                   bounds=((0, -20, 0.1, 0), (np.inf, 20, np.inf, np.inf)))
+                                   bounds=(
+                                   (0, -1 * 4 * abs(BG_sumple.x[0]), 0.1, 0), (np.inf, BG_sumple.x[0], np.inf, np.inf)))
 
     noBG = xrd_orgine.deduce_func_x(False, gaussian, BG_fit)
     BG_adj = min(noBG.y)
