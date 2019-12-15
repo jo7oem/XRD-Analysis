@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-w", "--window", action='append', help='Specify waveform window range. ex) \'-w 50-80\'')
 parser.add_argument("-s", "--smoothing", default=7, type=int, help='Number of data points for smoothing.')
 parser.add_argument("--maxfev", default=600, type=int, help='scipy curv_fit maxfev option')
+parser.add_argument("--printSmooth", action='store_true', help='print post smoothing value.')
 parser.add_argument('filename', metavar='file', type=str, help='read xrd csv file.')
 parser.add_argument('peaks', metavar='Peak', type=str, nargs='+',
                     help='Use peak window and an xrd peak position x. ex) 0,66')
@@ -265,7 +266,8 @@ def main():
     ys = np.array(BG_sumple.y)
     BG_fit, _ = optimize.curve_fit(gaussian, xs, ys, p0=[ys[0], xs[0], 1, ys[-1]], maxfev=args.maxfev,
                                    bounds=(
-                                   (0, -1 * 4 * abs(BG_sumple.x[0]), 0.1, 0), (np.inf, BG_sumple.x[0], np.inf, np.inf)))
+                                       (0, -1 * 4 * abs(BG_sumple.x[0]), 0.1, 0),
+                                       (np.inf, BG_sumple.x[0], np.inf, np.inf)))
 
     noBG = xrd_orgine.deduce_func_x(False, gaussian, BG_fit)
     BG_adj = min(noBG.y)
@@ -274,6 +276,12 @@ def main():
         return 0 * x + min_y
 
     noBG.deduce_func_x(True, adder, (BG_adj,))
+
+    if args.printSmooth:
+        print(True)
+        for i in range(len(noBG)):
+            print(noBG.x[i], noBG.y[i], sep=',')
+        return
 
     _, in_window_waves = separate_window(noBG, window_list)
 
