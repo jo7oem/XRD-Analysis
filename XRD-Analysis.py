@@ -1,10 +1,10 @@
 import argparse
 import csv
 import math
-from typing import List
 
 import numpy as np
 from scipy import optimize
+from typing import List
 
 # parser init begin
 VERSION = "0.1.0"
@@ -174,7 +174,11 @@ def separate_window(data: DataSet, window_list) -> (DataSet, List[DataSet]):
 
 
 def gaussian(x: float, a: float, mu: float, sigma: float, BG: float) -> float:
-    return a * np.exp(-1 * pow(x - mu, 2) / (2 * pow(sigma, 2))) + BG
+    return a * gaussian_func(x, mu, sigma) + BG
+
+
+def gaussian_func(x: float, x0: float, sigma: float) -> float:
+    return np.exp(-1 * pow(x - x0, 2) / (2 * pow(sigma, 2))) / np.sqrt(2 * math.pi)
 
 
 def multi_dim_func(x: float, *args) -> float:
