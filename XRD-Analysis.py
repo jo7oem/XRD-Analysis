@@ -173,12 +173,20 @@ def separate_window(data: DataSet, window_list) -> (DataSet, List[DataSet]):
     return not_window_data, window_data
 
 
-def gaussian(x: float, a: float, mu: float, sigma: float, BG: float) -> float:
-    return a * gaussian_func(x, mu, sigma) + BG
+def gaussian(x: float, a: float, x0: float, sigma: float, BG: float) -> float:
+    return a * gaussian_func(x, x0, sigma) + BG
 
 
 def gaussian_func(x: float, x0: float, sigma: float) -> float:
     return np.exp(-1 * pow(x - x0, 2) / (2 * pow(sigma, 2))) / np.sqrt(2 * math.pi)
+
+
+def lorentzian(x: float, a: float, x0: float, sigma: float, bg: float) -> float:
+    return a * lorentzian_func(x, x0, sigma) + bg
+
+
+def lorentzian_func(x: float, x0: float, sigma: float) -> float:
+    return (sigma / (pow(x - x0, 2) + pow(sigma, 2))) / math.pi
 
 
 def multi_dim_func(x: float, *args) -> float:
@@ -220,7 +228,7 @@ def sum_gaussians(x, *params):
     res = 0.0
 
     for i in range(len_peak):
-        res += gaussian(x=x, a=params[i * 3], mu=params[i * 3 + 1], sigma=params[i * 3 + 2], BG=0)
+        res += gaussian(x=x, a=params[i * 3], x0=params[i * 3 + 1], sigma=params[i * 3 + 2], BG=0)
     return res + params[-1]
 
 
