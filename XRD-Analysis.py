@@ -248,6 +248,7 @@ def sum_pseudo_voigt(x, *params):
     len_peak = int(len(params) / 4)
     res = 0.0
 
+    print(params)
     for i in range(len_peak):
         res += pseudo_voigt(x=x, a=params[i * 4], x0=params[i * 4 + 1], sigma=params[i * 4 + 2], eta=params[i * 4 + 3],
                             bg=0)
