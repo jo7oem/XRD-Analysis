@@ -189,6 +189,14 @@ def lorentzian_func(x: float, x0: float, sigma: float) -> float:
     return (sigma / (pow(x - x0, 2) + pow(sigma, 2))) / math.pi
 
 
+def pseudo_voigt(x: float, a: float, x0: float, sigma: float, eta: float, bg: float) -> float:
+    return a * pseudo_voigt_func(x, x0, sigma, eta) + bg
+
+
+def pseudo_voigt_func(x: float, x0: float, sigma: float, eta: float) -> float:
+    return eta * lorentzian_func(x, x0, sigma) + (1 - eta) * gaussian_func(x, x0, sigma)
+
+
 def multi_dim_func(x: float, *args) -> float:
     res = 0.0
     for i in range(len(args)):
