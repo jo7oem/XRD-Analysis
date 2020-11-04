@@ -224,6 +224,10 @@ def peak_fit(xy: DataSet, peaks, window):
         bounds_bottom.append(0.005)
         bounds_top.append(np.inf)
 
+        p0.append(0.5)
+        bounds_bottom.append(0)
+        bounds_top.append(1)
+
     p0.append(0.0)
     bounds_bottom.append(0)
     bounds_top.append(np.inf)
@@ -237,6 +241,16 @@ def sum_gaussians(x, *params):
 
     for i in range(len_peak):
         res += gaussian(x=x, a=params[i * 3], x0=params[i * 3 + 1], sigma=params[i * 3 + 2], BG=0)
+    return res + params[-1]
+
+
+def sum_pseudo_voigt(x, *params):
+    len_peak = int(len(params) / 4)
+    res = 0.0
+
+    for i in range(len_peak):
+        res += pseudo_voigt(x=x, a=params[i * 4], x0=params[i * 4 + 1], sigma=params[i * 4 + 2], eta=params[i * 4 + 3],
+                            bg=0)
     return res + params[-1]
 
 
@@ -284,12 +298,12 @@ def main():
 
     xs = np.array(BG_sumple.x)
     ys = np.array(BG_sumple.y)
-    BG_fit, _ = optimize.curve_fit(gaussian, xs, ys, p0=[ys[0], xs[0], 1, ys[-1]], maxfev=args.maxfev,
+    BG_fit, _ = optimize.curve_fit(pseudo_voigt, xs, ys, p0=[ys[0], xs[0], 1, ys[-1], 0.5], maxfev=args.maxfev,
                                    bounds=(
-                                       (0, -100, 0.1, 0),
-                                       (np.inf, BG_sumple.x[0], np.inf, np.inf)))
+                                       (0, -100, 0.1, 0, 0),
+                                       (np.inf, BG_sumple.x[0], np.inf, np.inf, 1)))
 
-    noBG = xrd_orgine.deduce_func_x(False, gaussian, BG_fit)
+    noBG = xrd_orgine.deduce_func_x(False, pseudo_voigt, BG_fit)
     BG_adj = min(noBG.y)
 
     def adder(x, min_y):
@@ -311,18 +325,19 @@ def main():
         fitting_result.append((*result,))
 
     print("Fitting result by ", target_file)
-    print("Gaussian,Amp,mu(peak),sigma,BG,BG Adj")
-    print("BG", BG_fit[0], BG_fit[1], BG_fit[2], BG_fit[3], BG_adj, sep=',')
+    print("Pseudo-voigt,Amp,mu(peak),sigma,,eta,BG,BG Adj")
+    print("BG", BG_fit[0], BG_fit[1], BG_fit[2], BG_fit[3], BG_fit[4], BG_adj, sep=',')
     print("")
 
-    print("Gaussian,Amp,mu(peak),sigma,BG,FWHM")
+    print("Pseudo-voigt,Amp,mu(peak),sigma,eta,BG,FWHM")
     for w in range(len(fitting_result)):
-        lres = int(len(fitting_result[w]) / 3)
+        lres = int(len(fitting_result[w]) / 4)
         if lres == 0:
             continue
         for i in range(lres):
-            print(("fit" + str(w) + "-" + str(i) + "(" + str(fittinglist[w][i]) + ")"), fitting_result[w][i * 3],
-                  fitting_result[w][i * 3 + 1], fitting_result[w][i * 3 + 2], fitting_result[w][-1] / lres,
+            print(("fit" + str(w) + "-" + str(i) + "(" + str(fittinglist[w][i]) + ")"), fitting_result[w][i * 4],
+                  fitting_result[w][i * 4 + 1], fitting_result[w][i * 4 + 2], fitting_result[w][i * 4 + 3],
+                  fitting_result[w][-1] / lres,
                   FWHM(fitting_result[w][i * 3 + 2]), sep=',')
 
     print("\n")
