@@ -232,7 +232,7 @@ def peak_fit(xy: DataSet, peaks, window):
     bounds_bottom.append(0)
     bounds_top.append(np.inf)
     bounds = (tuple(bounds_bottom), tuple(bounds_top))
-    return optimize.curve_fit(sum_gaussians, xy.x, xy.y, p0=p0, bounds=bounds, maxfev=args.maxfev)
+    return optimize.curve_fit(sum_pseudo_voigt, xy.x, xy.y, p0=p0, bounds=bounds, maxfev=args.maxfev)
 
 
 def sum_gaussians(x, *params):
