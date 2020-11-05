@@ -178,7 +178,7 @@ def gaussian(x: float, a: float, x0: float, sigma: float, BG: float) -> float:
 
 
 def gaussian_func(x: float, x0: float, sigma: float) -> float:
-    return np.exp(-1 * pow(x - x0, 2) / (2 * pow(sigma, 2))) / np.sqrt(2 * math.pi)
+    return np.exp(-1 * pow(x - x0, 2) / (2 * pow(sigma, 2))) / (sigma * math.sqrt(2 * math.pi))
 
 
 def lorentzian(x: float, a: float, x0: float, sigma: float, bg: float) -> float:
