@@ -298,10 +298,10 @@ def main():
 
     xs = np.array(BG_sumple.x)
     ys = np.array(BG_sumple.y)
-    BG_fit, _ = optimize.curve_fit(pseudo_voigt, xs, ys, p0=[ys[0], xs[0], 1, ys[-1], 0.5], maxfev=args.maxfev,
+    BG_fit, _ = optimize.curve_fit(pseudo_voigt, xs, ys, p0=[ys[0], xs[0], 1, 0.5, ys[-1]], maxfev=args.maxfev,
                                    bounds=(
                                        (0, -100, 0.1, 0, 0),
-                                       (np.inf, BG_sumple.x[0], np.inf, np.inf, 1)))
+                                       (np.inf, BG_sumple.x[0], np.inf, 1, np.inf)))
 
     noBG = xrd_orgine.deduce_func_x(False, pseudo_voigt, BG_fit)
     BG_adj = min(noBG.y)
