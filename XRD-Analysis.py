@@ -4,6 +4,7 @@ import math
 
 import numpy as np
 from scipy import optimize
+from scipy import special
 from typing import List
 
 # parser init begin
@@ -190,6 +191,7 @@ def lorentzian_func(x: float, x0: float, sigma: float) -> float:
 
 
 def pseudo_voigt(x: float, a: float, x0: float, sigma: float, eta: float, bg: float) -> float:
+    p = special.wofz(x, )
     return a * pseudo_voigt_func(x, x0, sigma, eta) + bg
 
 
@@ -325,11 +327,11 @@ def main():
         fitting_result.append((*result,))
 
     print("Fitting result by ", target_file)
-    print("Pseudo-voigt,Amp,mu(peak),sigma,eta,BG,BG Adj")
+    print("Pseudo-voigt,Amp,mu(peak),sigma,eta(Lorentzian Ratio),BG,BG Adj")
     print("BG", BG_fit[0], BG_fit[1], BG_fit[2], BG_fit[3], BG_fit[4], BG_adj, sep=',')
     print("")
 
-    print("Pseudo-voigt,Amp,mu(peak),sigma,eta,BG,FWHM")
+    print("Pseudo-voigt,Amp,mu(peak),sigma,eta(Lorentzian Ratio),BG,FWHM")
     for w in range(len(fitting_result)):
         lres = int(len(fitting_result[w]) / 4)
         if lres == 0:
