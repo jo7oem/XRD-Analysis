@@ -179,7 +179,9 @@ def gaussian(x: float, a: float, x0: float, sigma: float, BG: float) -> float:
 
 
 def gaussian_func(x: float, x0: float, sigma: float) -> float:
-    return np.exp(-1 * pow(x - x0, 2) / (2 * pow(sigma, 2))) / (sigma * math.sqrt(2 * math.pi))
+    return np.exp(-0.5 * pow(x - x0, 2) / pow(sigma, 2)) / (sigma * np.sqrt(2 * np.pi))
+    # return np.exp(-1*np.log(2)*pow(x-x0,2)/pow(sigma,2))
+    # return np.exp(-1 * pow(x - x0, 2) / (2 * pow(sigma, 2))) / (sigma * math.sqrt(2 * math.pi))
 
 
 def lorentzian(x: float, a: float, x0: float, sigma: float, bg: float) -> float:
@@ -187,11 +189,12 @@ def lorentzian(x: float, a: float, x0: float, sigma: float, bg: float) -> float:
 
 
 def lorentzian_func(x: float, x0: float, sigma: float) -> float:
-    return (sigma / (pow(x - x0, 2) + pow(sigma, 2))) / math.pi
+    return 1 / (np.pi * sigma * (1 + pow((x - x0) / sigma, 2)))
+    # return 1/(1+pow(x-x0,2)/pow(sigma,2))
+    #return (sigma / (pow(x - x0, 2) + pow(sigma, 2))) / math.pi
 
 
 def pseudo_voigt(x: float, a: float, x0: float, sigma: float, eta: float, bg: float) -> float:
-    p = special.wofz(x, )
     return a * pseudo_voigt_func(x, x0, sigma, eta) + bg
 
 
@@ -215,7 +218,7 @@ def peak_fit(xy: DataSet, peaks, window):
     bounds_top = []
     for peak in peaks:
         p0.append(xy.search_x(peak))
-        bounds_bottom.append(10)
+        bounds_bottom.append(100)
         bounds_top.append(np.inf)
 
         p0.append(peak)
@@ -226,7 +229,7 @@ def peak_fit(xy: DataSet, peaks, window):
         bounds_bottom.append(0.005)
         bounds_top.append(np.inf)
 
-        p0.append(0.5)
+        p0.append(1)
         bounds_bottom.append(0)
         bounds_top.append(1)
 
@@ -331,7 +334,7 @@ def main():
     print("BG", BG_fit[0], BG_fit[1], BG_fit[2], BG_fit[3], BG_fit[4], BG_adj, sep=',')
     print("")
 
-    print("Pseudo-voigt,Amp,mu(peak),sigma,eta(Lorentzian Ratio),BG,FWHM")
+    print("Pseudo-voigt,Amp,mu(peak),sigma,eta(Lorentzian Ratio),BG")
     for w in range(len(fitting_result)):
         lres = int(len(fitting_result[w]) / 4)
         if lres == 0:
@@ -339,8 +342,7 @@ def main():
         for i in range(lres):
             print(("fit" + str(w) + "-" + str(i) + "(" + str(fittinglist[w][i]) + ")"), fitting_result[w][i * 4],
                   fitting_result[w][i * 4 + 1], fitting_result[w][i * 4 + 2], fitting_result[w][i * 4 + 3],
-                  fitting_result[w][-1] / lres,
-                  FWHM(fitting_result[w][i * 3 + 2]), sep=',')
+                  fitting_result[w][-1] / lres, sep=',')
 
     print("\n")
 
